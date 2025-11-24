@@ -1,4 +1,4 @@
-use std::{net::Ipv4Addr, net::SocketAddr, sync::Arc};
+use std::{net::SocketAddr, sync::Arc};
 
 use socket2::{Domain, Protocol, Socket, Type};
 use tokio::{io::{AsyncBufReadExt, BufReader}, net::UdpSocket, task::JoinSet};
@@ -7,8 +7,8 @@ use tokio::{io::{AsyncBufReadExt, BufReader}, net::UdpSocket, task::JoinSet};
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<_> = std::env::args().skip(1).collect();
 
-    // let room = args.get(0).expect("The multicast address is not provided");
-    // let name = args.get(1).expect("The user name is not provided");
+    let room = args.get(0).expect("The multicast address is not provided");
+    let name = args.get(1).expect("The user name is not provided");
     
     let socket = Socket::new(Domain::IPV4, Type::DGRAM, Some(Protocol::UDP))?;
     socket.set_reuse_address(true)?;
@@ -21,13 +21,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let socket = UdpSocket::from_std(std_socket)?;
 
     let shared_socket = Arc::new(socket);
+
+    shared_socket.send_to(format!("{} entered chat", name).as_bytes(), room).await.unwrap();
     
-    // let room_ip: SocketAddr = room.parse().unwrap();
     let recv_socket = Arc::clone(&shared_socket);
     let interface = "127.0.0.1".parse().unwrap();
-    let room: Ipv4Addr = "224.0.0.1".parse().unwrap();
-    recv_socket.join_multicast_v4(room, interface).unwrap();
-    
+    recv_socket.join_multicast_v4(room.parse().unwrap(), interface).unwrap();
 
     println!("Entered chat room successfully");
 
