@@ -22,7 +22,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let shared_socket = Arc::new(socket);
 
-    shared_socket.send_to(format!("{} entered chat", name).as_bytes(), room).await.unwrap();
+    shared_socket.send_to(format!("{} entered chat", name).as_bytes(), format!("{}:8080", room)).await.unwrap();
     
     let recv_socket = Arc::clone(&shared_socket);
     let interface = "127.0.0.1".parse().unwrap();
