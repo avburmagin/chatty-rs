@@ -8,7 +8,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<_> = std::env::args().skip(1).collect();
 
     let room = args.get(0).expect("The multicast address is not provided");
-    let name = args.get(1).expect("The user name is not provided");
+    let name = args.get(1).expect("The user name is not provided").clone();
     
     let socket = Socket::new(Domain::IPV4, Type::DGRAM, Some(Protocol::UDP))?;
     socket.set_reuse_address(true)?;
@@ -39,7 +39,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let result = reader.read_line(&mut buf).await;
             match result {
                 Ok(_) => {
-                    send_socket.send_to(buf.as_bytes(), "224.0.0.1:8080".parse::<SocketAddr>().unwrap()).await.unwrap();
+                    send_socket.send_to(format!("{}: {}", name, buf).as_bytes(), "224.0.0.1:8080".parse::<SocketAddr>().unwrap()).await.unwrap();
                 },
                 Err(e) => {
                     eprintln!("Error: {}", e);
