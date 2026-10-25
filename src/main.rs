@@ -14,7 +14,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     socket.set_reuse_address(true)?;
     socket.set_nonblocking(true)?;
 
-    let address: std::net::SocketAddr = "0.0.0.0:8080".parse().unwrap();
+    let address: std::net::SocketAddr = "0.0.0.0:8080".parse()?;
     socket.bind(&address.into())?;
 
     let std_socket: std::net::UdpSocket = socket.into();
@@ -22,11 +22,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let shared_socket = Arc::new(socket);
 
-    shared_socket.send_to(format!("{} entered chat", name).as_bytes(), format!("{}:8080", room)).await.unwrap();
+    shared_socket.send_to(format!("{} entered chat", name).as_bytes(), format!("{}:8080", room)).await?;
     
     let recv_socket = Arc::clone(&shared_socket);
-    let interface = "127.0.0.1".parse().unwrap();
-    recv_socket.join_multicast_v4(room.parse().unwrap(), interface).unwrap();
+    let interface = "127.0.0.1".parse()?;
+    recv_socket.join_multicast_v4(room.parse()?, interface)?;
 
     println!("Entered chat room successfully");
 
